@@ -51,9 +51,11 @@ contract RockPaperScissor {
             var (p1Score,p2Score) = scoreGame(playerOneSequence, _sequence);
             if (p1Score > p2Score) {
                 charity[playerOneCharity].balance += this.balance;
+                delete playerOneSequence;
                 LogWinnerDonation(playerOneCharity, charity[playerOneCharity].name, charity[playerOneCharity].balance);
             } else {
                 charity[_charityAddr].balance += this.balance;
+                delete playerOneSequence;
                 LogWinnerDonation(_charityAddr, charity[_charityAddr].name, charity[_charityAddr].balance);
             }
         }
