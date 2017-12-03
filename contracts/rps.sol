@@ -2,10 +2,17 @@ pragma solidity ^0.4.17;
 
 contract RockPaperScissor {
     address owner;
+    bytes32[] playerOneSequence;
+    address playerOneCharity;
 
-    mapping(bytes32 => address) charityAddr;
+    struct charityStruct {
+        bytes32 name;
+        uint256 balance;
+    }
 
-    event LogWinnerDonation(uint256 _amount, bytes32 _charityName);
+    mapping(address => charityStruct) charity;
+
+    event LogWinnerDonation(address indexed _charityAddr, bytes32 _charityName, uint256 _charityBalance);
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
 
@@ -22,31 +29,41 @@ contract RockPaperScissor {
         onlyOwner
         returns(bool)
     {
-        charityAddr[_name] = _wallet;
+        charity[_wallet].name = _name;
         return true;
     }
 
-    function playGame(bytes32[] _plays)
+    // P1 = ["Rock", "Paper", "Scissor", "Rock", "Rock"], "0xdd870fa1b7c4700f2bd7f44238821c26f7392148"
+    // P2 = ["Rock", "Paper", "Paper", "Rock", "Paper"], "0x583031d1113ad414f02576bd6afabfb302140225" (ties)
+    // P2 = ["Paper", "Paper", "Paper", "Rock", "Scissor"], "0x583031d1113ad414f02576bd6afabfb302140225" (loses)
+    function playGame(bytes32[] _sequence, address _charityAddr)
         public
         payable
-        returns(address )
+        returns(bool)
     {
         require(msg.value >= 0.01 * 1 ether);
-        //input == 5 plays + 1 charity + 1  ethAmount
-        //take input from player 1
-        //take input from player 2 and scoreGame
-        //add both amounts to winning charity balance
-        //print LogWinnerDonation event
+        require(_charityAddr != 0x00);
 
-        //mathing players logic
-        //if first (odd) player then set up game
-        //if second (event) player then score etc.
-        //check if charities are different?
+        if (playerOneSequence.length == 0) {
+            playerOneSequence = _sequence;
+            playerOneCharity = _charityAddr;
+        } else {
+            var (p1Score,p2Score) = scoreGame(playerOneSequence, _sequence);
+            if (p1Score > p2Score) {
+                charity[playerOneCharity].balance += this.balance;
+                LogWinnerDonation(playerOneCharity, charity[playerOneCharity].name, charity[playerOneCharity].balance);
+            } else {
+                charity[_charityAddr].balance += this.balance;
+                LogWinnerDonation(_charityAddr, charity[_charityAddr].name, charity[_charityAddr].balance);
+            }
+        }
+
+        return true;
     }
 
     function scoreGame(bytes32[] _playerOne, bytes32[] _playerTwo)
         private
-        constant
+        pure
         returns(uint8 playerOneScore, uint8 playerTwoScore)
     {
         require(_playerOne.length == _playerTwo.length);
