@@ -52,6 +52,7 @@ contract RockPaperScissor {
     {
         require(msg.value >= 0.01 * 1 ether);
         require(_charityAddr != 0x00);
+        require(charity[_charityAddr].name != 0x00); //checks if charity exists on contract
 
         if (playerOneSequence.length == 0) {
             playerOneSequence = _sequence;
@@ -61,7 +62,7 @@ contract RockPaperScissor {
             if (p1Score > p2Score) {
                 charity[playerOneCharity].balance += this.balance;
                 LogWinnerDonation(
-                    layerOneCharity,
+                    playerOneCharity,
                     charity[playerOneCharity].name,
                     charity[playerOneCharity].balance
                 );
