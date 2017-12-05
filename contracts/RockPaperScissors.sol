@@ -1,20 +1,29 @@
 pragma solidity ^0.4.17;
 
+
 contract RockPaperScissor {
     address owner;
-    bytes32[] playerOneSequence;
     address playerOneCharity;
+    bytes32[] playerOneSequence;
 
-    struct charityStruct {
+    struct CharityStruct {
         bytes32 name;
         uint256 balance;
     }
 
-    mapping(address => charityStruct) charity;
+    mapping(address => CharityStruct) charity;
 
-    event LogWinnerDonation(address indexed _charityAddr, bytes32 _charityName, uint256 _charityBalance);
+    event LogWinnerDonation(
+            address indexed _charityAddr,
+            bytes32 _charityName,
+            uint256 _charityBalance);
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
+
+    modifier onlyCharity(address _charityAddr) {
+        require(charity[_charityAddr].name != 0x00);
+        _;
+    }
 
     function () public {
 
@@ -51,16 +60,52 @@ contract RockPaperScissor {
             var (p1Score,p2Score) = scoreGame(playerOneSequence, _sequence);
             if (p1Score > p2Score) {
                 charity[playerOneCharity].balance += this.balance;
-                delete playerOneSequence;
-                LogWinnerDonation(playerOneCharity, charity[playerOneCharity].name, charity[playerOneCharity].balance);
+                LogWinnerDonation(
+                    layerOneCharity,
+                    charity[playerOneCharity].name,
+                    charity[playerOneCharity].balance
+                );
             } else {
                 charity[_charityAddr].balance += this.balance;
-                delete playerOneSequence;
-                LogWinnerDonation(_charityAddr, charity[_charityAddr].name, charity[_charityAddr].balance);
+                LogWinnerDonation(
+                    _charityAddr,
+                    charity[_charityAddr].name,
+                    charity[_charityAddr].balance
+                );
             }
+            delete playerOneSequence;
         }
 
         return true;
+    }
+
+    function withdraw()
+        public
+        onlyCharity(msg.sender)
+        returns (bool)
+    {
+        uint256 charityBalance = charity[msg.sender].balance;
+        charity[msg.sender].balance = 0;
+
+        msg.sender.transfer(charityBalance);
+
+        return true;
+    }
+
+    function getCharityName(address _charityAddr)
+        public
+        constant
+        returns(bytes32)
+    {
+        return charity[_charityAddr].name;
+    }
+
+    function getCharityBalance(address _charityAddr)
+        public
+        constant
+        returns(uint256)
+    {
+        return charity[_charityAddr].balance;
     }
 
     function scoreGame(bytes32[] _playerOne, bytes32[] _playerTwo)
@@ -71,7 +116,7 @@ contract RockPaperScissor {
         require(_playerOne.length == _playerTwo.length);
 
         for (uint8 i = 0; i < _playerOne.length; i ++) {
-            if (_playerOne[i] == _playerOne[i]) {
+            if (_playerOne[i] == _playerTwo[i]) {
                 i ++;
             } else if (_playerOne[i] == "Rock" && _playerTwo[i] == "Scissor") {
                 playerOneScore ++;
