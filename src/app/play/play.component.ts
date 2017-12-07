@@ -1,50 +1,48 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
+import {Symbols, SymbolsUrl, SymbolsList} from './game.service';
 
 @Component({
   template: `
-    <div id='rps'></div>
+    <h1>Select your sequence</h1>
+
+    <div>
+      <img *ngFor='let s of SymbolsList' [src]='SymbolsUrl[s]' (click)='addToSeq(s)'>
+    </div>
+
+
+    <p>Sequence:</p>
+
+    <div class='sequence'>
+      <div *ngFor='let s of seq' class='symbol-container'>
+        <img *ngIf='s' [src]='SymbolsUrl[s]'>
+      </div>
+    </div>
+
+    <button (click)='play()' type="button" class="btn btn-primary" [disabled]='!seq[4]'>Play</button>
+
   `,
+  styleUrls: ['./play.component.scss']
 })
 export class PlayComponent {
 
-  game : any = null;
+  SymbolsUrl = SymbolsUrl;
+  SymbolsList = SymbolsList;
 
-  ngAfterViewInit() {
-    this.game = new Phaser.Game(400, 300, Phaser.AUTO, 'rps', this, false);
-  }
+  seq = new Array(5);
 
-  preload(game) {
-    game.load.image('rock','assets/rock.png');
-    game.load.image('paper','assets/paper.png');
-    game.load.image('scissor','assets/scissor.png');
-  }
-
-  shake(game, sprite, height : number) {
-    var bounce=game.add.tween(sprite);
-
-    bounce.to({ y: sprite.y + height }, 200, Phaser.Easing.Sinusoidal.In, true, 0 , 2, true);
-    bounce.onComplete.add(function(){}, this);
-  }
-
-  create(game) {
-    var rock = game.add.sprite(50, game.world.height / 2, 'rock');
-    var paper = game.add.sprite(game.world.width - 100, game.world.height / 2, 'paper');
-
-    paper.scale.x = -1;
-    //paper.anchor.setTo(.5, 1);
-
-    this.shake(game,rock,40);
-    this.shake(game,paper,40);
+  constructor(private router: Router) {
 
   }
 
+  addToSeq(url) {
+    this.seq.unshift(url);
+    this.seq.pop();
+  }
 
-
-
-  ngOndestroy() {
-    if (this.game) {
-      this.game.destroy();
-    }
+  play() {
+    console.log(this.seq.join(','));
+    this.router.navigate(['/play/game'], { queryParams: { seq: this.seq }});
   }
 }

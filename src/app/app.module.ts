@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import {PlayComponent} from './play/play.component'
 import {ProjectComponent} from './project/project.component'
+import {GameComponent} from './play/game.component'
 
 import { AppRouting } from './app.routing';
 
@@ -14,6 +15,7 @@ import { AppRouting } from './app.routing';
     AppComponent,
     PlayComponent,
     ProjectComponent,
+    GameComponent,
   ],
   imports: [
     BrowserModule,
