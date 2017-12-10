@@ -43,6 +43,6 @@ export class PlayComponent {
 
   play() {
     console.log(this.seq.join(','));
-    this.router.navigate(['/play/game'], { queryParams: { seq: this.seq }});
+    this.router.navigate(['/rps/play/game'], { queryParams: { seq: this.seq }});
   }
 }

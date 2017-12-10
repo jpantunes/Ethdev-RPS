@@ -12,7 +12,6 @@ import { RpsComponent } from './rps.component';
 const appRoutes: Routes = [
   {
     path: '',
-    pathMatch: "full",
     component: RpsComponent,
     resolve: {
       web3 : Web3Resolver
