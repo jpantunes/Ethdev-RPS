@@ -1,8 +1,10 @@
 pragma solidity ^0.4.13;
 
+import "./StickerToken.sol";
 
 contract RockPaperScissor {
     address public owner;
+    address public stikerAddr;
 
     struct PlayerStruct {
         bytes32 encryptedSequence;
@@ -108,6 +110,11 @@ contract RockPaperScissor {
 
             charity[winningCharity].balance += gameDonation;
 
+            StickerToken token = StickerToken(stikerAddr);
+            if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
+                revert();
+            }
+
             LogWinningCharity(
                 winningCharity,
                 charity[winningCharity].name,
@@ -130,6 +137,15 @@ contract RockPaperScissor {
 
         msg.sender.transfer(charityBalance);
 
+        return true;
+    }
+
+    function newStickerAddr()
+        external
+        onlyOwner
+        returns(bool)
+    {
+        stikerAddr = new StickerToken();
         return true;
     }
 
