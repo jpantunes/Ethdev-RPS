@@ -9,6 +9,8 @@ import {Web3Resolver} from './services/web3.resolver'
 import {RPSResolver} from './services/rps.resolver'
 import { RpsComponent } from './rps.component';
 
+import {CharitiesResolver} from './services/charities.resolver'
+import {AddrResolver} from './services/addr.resolver'
 
 
 const appRoutes: Routes = [
@@ -21,7 +23,14 @@ const appRoutes: Routes = [
     component: RpsComponent,
     children : [
       { path: '', component: PlayComponent },
-      { path: 'play', component: PlayComponent  },
+      {
+        path: 'play',
+        component: PlayComponent,
+        resolve: {
+          addr : AddrResolver,
+          charities : CharitiesResolver,
+        },
+      },
       { path: 'play/game', component: GameComponent  },
       { path: 'project', component: ProjectComponent },
       { path: 'add-charity', component: AddCharityComponent },

@@ -94,16 +94,32 @@ contract RockPaperScissor {
 
     }
 
+    function getEncryptedSequence()
+      public
+      returns (bytes32) {
+      return player[msg.sender].encryptedSequence;
+    }
+
     // P1 = ["Rock", "Paper", "Scissor", "Rock", "Rock"], "secretPass"
     // P2 = ["Rock", "Paper", "Paper", "Rock", "Paper"], "secretPass" //(ties)
     // P2 = ["Paper", "Paper", "Paper", "Rock", "Scissor"], "secretPass" //(loses)
-    function playGame(bytes32[] _sequence, bytes32 _secret)
+    function playGame(bytes32[] _sequence, address _charityAddr)
         public
-        onlyPlayer(msg.sender)
+        payable
         returns(bool)
     {
-        require(keccak256(msg.sender, _sequence, _secret) == player[msg.sender].encryptedSequence);
+        //require(keccak256(msg.sender, _sequence, _secret) == player[msg.sender].encryptedSequence);
+        require(msg.value >= 0.01 * 1 ether);
+        require(player[msg.sender].encryptedSequence == 0x00);
+        require(_charityAddr != 0x00);
+        require(charity[_charityAddr].name != 0x00); //checks if charity exists on contract
         require(_sequence.length == 5);
+
+        player[msg.sender].encryptedSequence = keccak256(msg.sender, _sequence);
+        player[msg.sender].charityAddr = _charityAddr;
+        player[msg.sender].donation = msg.value;
+
+        LogDonation(msg.sender, msg.value);
 
         GameStruct memory newGame;
         newGame.player = msg.sender;
@@ -115,10 +131,10 @@ contract RockPaperScissor {
 
             charity[winningCharity].balance += gameDonation;
 
-            StickerToken token = StickerToken(stikerAddr);
+            /*StickerToken token = StickerToken(stikerAddr);
             if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
                 revert();
-            }
+            }*/
 
             LogWinningCharity(
                 winningCharity,

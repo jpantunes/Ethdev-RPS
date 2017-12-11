@@ -22,7 +22,8 @@ export class RPSResolver  {
       c.setProvider(window['web3'].currentProvider)
       return c.deployed().then((instance) => {
         return instance;
-      }, () => {
+      }, (a) => {
+        console.log(a);
         this.router.navigate(['/network-not-supported']);
       })
     } else {
