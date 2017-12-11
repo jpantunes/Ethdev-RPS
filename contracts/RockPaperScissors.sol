@@ -30,6 +30,8 @@ contract RockPaperScissor {
 
     event LogDonation(address indexed _donor, uint256 _amount);
 
+    event LogNewCharity(address indexed _charityAddr, bytes32 _charityName);
+
     event LogWinningCharity(
             address indexed _charityAddr,
             bytes32 _charityName,
@@ -62,6 +64,9 @@ contract RockPaperScissor {
         returns(bool)
     {
         charity[_wallet].name = _name;
+
+        LogNewCharity(_wallet, _name);
+
         return true;
     }
 

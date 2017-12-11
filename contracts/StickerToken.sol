@@ -14,7 +14,7 @@ contract StickerToken {
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
 
-    event LogNewSticker(address _owner, uint256 _stickerID);
+    event LogNewSticker(address indexed _owner, uint256 _stickerID);
 
     function() public {
 
