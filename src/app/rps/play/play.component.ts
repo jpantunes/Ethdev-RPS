@@ -1,7 +1,11 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import {Symbols, SymbolsUrl, SymbolsList} from './game.service';
+
+const RockPaperScissorsArtifact = require('../../../../build/contracts/RockPaperScissor.json');
+import contract from 'truffle-contract'
+import Web3 from 'web3';
 
 @Component({
   template: `
@@ -32,7 +36,24 @@ export class PlayComponent {
 
   seq = new Array(5);
 
-  constructor(private router: Router) {
+  web3: Web3 = null;
+
+  constructor(private router: Router, private activatedRoute : ActivatedRoute) {
+
+    this.activatedRoute.data.subscribe((data: any) => {
+      console.log(data);
+    });
+    // this.web3 = this.activatedRoute.snapshot.data.web3;
+    // let RockPaperScissors = contract(RockPaperScissorsArtifact);
+    // RockPaperScissors.setProvider(this.web3.currentProvider);
+    //
+    // console.log(RockPaperScissors);
+    //
+    // RockPaperScissors
+    // .deployed()
+    // .then(instance => {
+    //   console.log(instance);
+    // })
 
   }
 
