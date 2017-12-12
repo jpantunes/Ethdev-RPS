@@ -240,12 +240,15 @@ contract RockPaperScissor {
         }
     }
 
-    // function testSecret(bytes32[] _sequence, bytes32 _secret)
-    //     constant
-    //     public
-    //     returns (bytes32)
-    // {
-    //     return keccak256(msg.sender, _sequence, _secret);
-    // }
+    //to be used in tests bc issue with web3js
+    //web3.utils.soliditySha3(['Rock'])
+    //soliditySha3.js:176 Uncaught Error: Autodetection of array types is not supported.
+    function preHashTest(address _playerAddr, bytes32[] _sequence, bytes32 _secret)
+         pure
+         external
+         returns (bytes32)
+     {
+         return keccak256(_playerAddr, _sequence, _secret);
+     }
 
 }
