@@ -105,8 +105,10 @@ contract RockPaperScissor {
     }
 
     function getEncryptedSequence()
+      constant
       public
-      returns (bytes32) {
+      returns (bytes32)
+    {
       return player[msg.sender].encryptedSequence;
     }
 
