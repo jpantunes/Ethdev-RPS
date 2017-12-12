@@ -24,17 +24,25 @@ contract RockPaperScissor {
     struct CharityStruct {
         bytes32 name;
         uint256 balance;
+        bytes32 description;
+        bytes32 imageUrl;
     }
 
     mapping(address => CharityStruct) charity;
 
     event LogDonation(address indexed _donor, uint256 _amount);
 
-    event LogNewCharity(address indexed _charityAddr, bytes32 _charityName);
+    event LogNewCharity(address indexed _charityAddr,
+                        bytes32 _charityName,
+                        bytes32 _description,
+                        bytes32 _imageUrl);
 
     event LogWinningCharity(
+            bytes32[] _p1seq,
+            address _p1addr,
+            bytes32[] _p2seq,
+            address _p2addr,
             address indexed _charityAddr,
-            bytes32 _charityName,
             uint256 _donationAmount);
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
@@ -58,14 +66,16 @@ contract RockPaperScissor {
     }
 
     // "Test Charity", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
-    function addCharity(bytes32 _name, address _wallet)
+    function addCharity(bytes32 _name, address _wallet, bytes32 _description, bytes32 _imageUrl)
         public
         onlyOwner
         returns(bool)
     {
         charity[_wallet].name = _name;
+        charity[_wallet].description = _description;
+        charity[_wallet].imageUrl = _imageUrl;
 
-        LogNewCharity(_wallet, _name);
+        LogNewCharity(_wallet, _name, _description, _imageUrl);
 
         return true;
     }
@@ -135,12 +145,6 @@ contract RockPaperScissor {
             if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
                 revert();
             }*/
-
-            LogWinningCharity(
-                winningCharity,
-                charity[winningCharity].name,
-                gameDonation
-            );
         }
 
         player[msg.sender].encryptedSequence = 0x00; //zeroes the donation per sequence
@@ -218,6 +222,15 @@ contract RockPaperScissor {
                 playerTwoScore ++;
             }
         }
+
+        LogWinningCharity(
+            playerOne,
+            playerOneAddr,
+            playerTwo,
+            playerTwoAddr,
+            winningCharity,
+            gameDonation
+        );
 
         if (playerOneScore > playerTwoScore) {
             return (player[playerOneAddr].charityAddr, gameDonation);

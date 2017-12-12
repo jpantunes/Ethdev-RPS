@@ -11,8 +11,18 @@ import { Router, ActivatedRoute } from '@angular/router';
       </div>
 
       <div class="form-group">
-        <label for="alterEgo">Adress</label>
-        <input type="text" ngModel name='addr'  #addr='ngModel' class="form-control" id="alterEgo">
+        <label for="addr">Adress</label>
+        <input type="text" ngModel name='addr'  #addr='ngModel' class="form-control" id="addr">
+      </div>
+
+      <div class="form-group">
+        <label for="description">description</label>
+        <input type="text" ngModel name='description'  #description='ngModel' class="form-control" id="description">
+      </div>
+
+      <div class="form-group">
+        <label for="imageUrl">imageUrl</label>
+        <input type="text" ngModel name='imageUrl'  #imageUrl='ngModel' class="form-control" id="imageUrl">
       </div>
 
       <button type="submit" class="btn btn-success">Submit</button>
@@ -27,7 +37,6 @@ export class AddCharityComponent {
 
   constructor(private router: Router, private activatedRoute : ActivatedRoute) {
     this.activatedRoute.parent.data.subscribe((data: { rps : any , web3 : any}) => {
-      console.log(data);
       this.rps = data.rps;
       this.web3 = data.web3;
     });
@@ -38,7 +47,7 @@ export class AddCharityComponent {
       console.log(data.value)
       this.web3.eth.getAccounts((err, accs) => {
         console.log(err, accs);
-        this.rps.addCharity(data.value.name, data.value.addr, {from : accs[0]}).then((a) =>{
+        this.rps.addCharity(data.value.name, data.value.addr, data.value.description, data.value.imageUrl, {from : accs[0]}).then((a) =>{
           console.log(a);
         })
       });

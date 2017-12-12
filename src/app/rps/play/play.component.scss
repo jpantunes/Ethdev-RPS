@@ -1,3 +1,29 @@
+.charities {
+  .charity {
+    display: inline-flex;
+
+    .text {
+      .title {
+        font-weight: bold;
+      }
+    }
+
+    &.selected {
+      .title {
+        color: red;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.SymbolsList {
+  img {
+    width: 50px;
+    height: auto;
+  }
+}
+
 .sequence {
   display: flex;
   flex-direction: row;

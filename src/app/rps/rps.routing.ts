@@ -22,7 +22,7 @@ const appRoutes: Routes = [
     },
     component: RpsComponent,
     children : [
-      { path: '', component: PlayComponent },
+      { path: '', component: ProjectComponent },
       {
         path: 'play',
         component: PlayComponent,
@@ -31,7 +31,14 @@ const appRoutes: Routes = [
           charities : CharitiesResolver,
         },
       },
-      { path: 'play/game', component: GameComponent  },
+      {
+        path: 'play/game',
+        resolve: {
+          addr : AddrResolver,
+          charities : CharitiesResolver,
+        },
+        component: GameComponent
+      },
       { path: 'project', component: ProjectComponent },
       { path: 'add-charity', component: AddCharityComponent },
     ]
