@@ -2,15 +2,15 @@ pragma solidity ^0.4.13;
 
 
 contract StickerToken {
-    address owner;
+    address public owner;
 
     struct StickerStruct {
         uint256 creationDate;
         bytes32 stickerDNA;
     }
 
-    StickerStruct[] stickers;
-    mapping(uint => address) indexAddr;
+    StickerStruct[] public stickers;
+    mapping(uint => address) public indexAddr;
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
 

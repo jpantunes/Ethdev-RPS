@@ -2,6 +2,7 @@ pragma solidity ^0.4.13;
 
 import "./StickerToken.sol";
 
+
 contract RockPaperScissor {
     address public owner;
     address public stikerAddr;
@@ -12,7 +13,7 @@ contract RockPaperScissor {
         uint256 donation;
     }
 
-    mapping(address => PlayerStruct) player;
+    mapping(address => PlayerStruct) public player;
 
     struct GameStruct {
         address player;
@@ -23,39 +24,30 @@ contract RockPaperScissor {
 
     struct CharityStruct {
         bytes32 name;
-        uint256 balance;
         bytes32 description;
         bytes32 imageUrl;
+        uint256 balance;
     }
 
-    mapping(address => CharityStruct) charity;
+    mapping(address => CharityStruct) public charity;
 
     event LogDonation(address indexed _donor, uint256 _amount);
 
-    event LogNewCharity(address indexed _charityAddr,
-                        bytes32 _charityName,
-                        bytes32 _description,
-                        bytes32 _imageUrl);
+    event LogNewCharity(
+            address indexed _charityAddr,
+            bytes32 _charityName,
+            bytes32 _description,
+            bytes32 _imageUrl);
 
     event LogWinningCharity(
-            bytes32[] _p1seq,
-            address _p1addr,
-            bytes32[] _p2seq,
-            address _p2addr,
             address indexed _charityAddr,
             uint256 _donationAmount);
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
 
-    modifier onlyPlayer(address _playerAddr) {
-        require(player[_playerAddr].encryptedSequence != 0x00);
-        _;
-    }
+    modifier onlyCharity() {require(charity[msg.sender].name != 0x00); _;}
 
-    modifier onlyCharity(address _charityAddr) {
-        require(charity[_charityAddr].name != 0x00);
-        _;
-    }
+    modifier onlyPlayer() {require(player[msg.sender].encryptedSequence != 0x00); _;}
 
     function () public {
 
@@ -65,9 +57,22 @@ contract RockPaperScissor {
         owner = msg.sender;
     }
 
+    function newStickerAddr()
+        external
+        onlyOwner
+        returns(bool)
+    {
+        stikerAddr = new StickerToken();
+        return true;
+    }
+
     // "Test Charity", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
-    function addCharity(bytes32 _name, address _wallet, bytes32 _description, bytes32 _imageUrl)
-        public
+    function addCharity(
+        address _wallet,
+        bytes32 _name,
+        bytes32 _description,
+        bytes32 _imageUrl)
+        external
         onlyOwner
         returns(bool)
     {
@@ -75,104 +80,26 @@ contract RockPaperScissor {
         charity[_wallet].description = _description;
         charity[_wallet].imageUrl = _imageUrl;
 
-        LogNewCharity(_wallet, _name, _description, _imageUrl);
-
-        return true;
-    }
-
-    // P1, P2 = account0, account4
-    // P1 = "0x6009a4a4ed0f20a8c8114abe1c6b0daadb54335a0c1c9d4ddd14ee4cc404e6a2", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
-    // P2 = "0x2f9e3e2deacd6a62476944e482cbde4423338ef8d2f1e9ac67b18b1f6d0b4323", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (ties)
-    // P2 = "0x04871a799540604ffd45c18b21f9c89c3de0328ced3a804392214ff5461909c1", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (loses)
-    function setupGame(bytes32 _encryptedSequence, address _charityAddr)
-        public
-        payable
-        returns(bool)
-    {
-        require(msg.value >= 0.01 * 1 ether);
-        require(player[msg.sender].encryptedSequence == 0x00);
-        require(_charityAddr != 0x00);
-        require(charity[_charityAddr].name != 0x00); //checks if charity exists on contract
-
-        player[msg.sender].encryptedSequence = _encryptedSequence;
-        player[msg.sender].charityAddr = _charityAddr;
-        player[msg.sender].donation = msg.value;
-
-        LogDonation(msg.sender, msg.value);
-
-        return true;
-
-    }
-
-    function getEncryptedSequence()
-      constant
-      public
-      returns (bytes32)
-    {
-      return player[msg.sender].encryptedSequence;
-    }
-
-    // P1 = ["Rock", "Paper", "Scissor", "Rock", "Rock"], "secretPass"
-    // P2 = ["Rock", "Paper", "Paper", "Rock", "Paper"], "secretPass" //(ties)
-    // P2 = ["Paper", "Paper", "Paper", "Rock", "Scissor"], "secretPass" //(loses)
-    function playGame(bytes32[] _sequence, address _charityAddr)
-        public
-        payable
-        returns(bool)
-    {
-        //require(keccak256(msg.sender, _sequence, _secret) == player[msg.sender].encryptedSequence);
-        require(msg.value >= 0.01 * 1 ether);
-        require(player[msg.sender].encryptedSequence == 0x00);
-        require(_charityAddr != 0x00);
-        require(charity[_charityAddr].name != 0x00); //checks if charity exists on contract
-        require(_sequence.length == 5);
-
-        player[msg.sender].encryptedSequence = keccak256(msg.sender, _sequence);
-        player[msg.sender].charityAddr = _charityAddr;
-        player[msg.sender].donation = msg.value;
-
-        LogDonation(msg.sender, msg.value);
-
-        GameStruct memory newGame;
-        newGame.player = msg.sender;
-        newGame.sequence = _sequence;
-        games.push(newGame);
-
-        if (games.length % 2 == 0) {
-            var (winningCharity, gameDonation) = scoreGame(games.length);
-
-            charity[winningCharity].balance += gameDonation;
-
-            /*StickerToken token = StickerToken(stikerAddr);
-            if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
-                revert();
-            }*/
-        }
-
-        player[msg.sender].encryptedSequence = 0x00; //zeroes the donation per sequence
+        LogNewCharity(
+            _wallet,
+            _name,
+            _description,
+            _imageUrl
+        );
 
         return true;
     }
 
     function withdraw()
         external
-        onlyCharity(msg.sender)
-        returns (bool)
+        onlyCharity
+        returns(bool)
     {
         uint256 charityBalance = charity[msg.sender].balance;
         charity[msg.sender].balance = 0;
 
         msg.sender.transfer(charityBalance);
 
-        return true;
-    }
-
-    function newStickerAddr()
-        external
-        onlyOwner
-        returns(bool)
-    {
-        stikerAddr = new StickerToken();
         return true;
     }
 
@@ -190,6 +117,66 @@ contract RockPaperScissor {
         returns(uint256)
     {
         return charity[_charityAddr].balance;
+    }
+
+    // P1, P2 = account0, account4
+    // P1 = "0x6009a4a4ed0f20a8c8114abe1c6b0daadb54335a0c1c9d4ddd14ee4cc404e6a2", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
+    // P2 = "0x2f9e3e2deacd6a62476944e482cbde4423338ef8d2f1e9ac67b18b1f6d0b4323", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (ties)
+    // P2 = "0x04871a799540604ffd45c18b21f9c89c3de0328ced3a804392214ff5461909c1", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (loses)
+    function setupGame(bytes32 _encryptedSequence, address _charityAddr)
+        public
+        payable
+        returns(bool)
+    {
+        require(msg.value >= 0.01 * 1 ether);
+        require(player[msg.sender].encryptedSequence == 0x00); //this will stop players from doing 2 commits without revealing first
+        require(charity[_charityAddr].name != 0x00); //charity must exist on contract
+
+        player[msg.sender].encryptedSequence = _encryptedSequence;
+        player[msg.sender].charityAddr = _charityAddr;
+        player[msg.sender].donation = msg.value;
+
+        LogDonation(msg.sender, msg.value);
+
+        return true;
+
+    }
+
+    // P1 = ["Rock", "Paper", "Scissor", "Rock", "Rock"], "secretPass"
+    // P2 = ["Rock", "Paper", "Paper", "Rock", "Paper"], "secretPass" //(ties)
+    // P2 = ["Paper", "Paper", "Paper", "Rock", "Scissor"], "secretPass" //(loses)
+    function playGame(bytes32[] _sequence, bytes32 _secret)
+        public
+        onlyPlayer
+        returns(bool)
+    {
+        require(keccak256(msg.sender, _sequence, _secret) == player[msg.sender].encryptedSequence);
+        require(_sequence.length == 5);
+
+        GameStruct memory newGame;
+        newGame.player = msg.sender;
+        newGame.sequence = _sequence;
+        games.push(newGame);
+
+        if (games.length % 2 == 0) {
+            var (winningCharity, gameDonation) = scoreGame(games.length);
+
+            StickerToken token = StickerToken(stikerAddr);
+            if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
+                revert();
+            }
+
+            charity[winningCharity].balance += gameDonation;
+
+            LogWinningCharity(
+                winningCharity,
+                gameDonation
+            );
+        }
+
+        player[msg.sender].encryptedSequence = 0x00; //allows for a new commit from player
+
+        return true;
     }
 
     function scoreGame(uint256 _playNumber)
@@ -225,15 +212,6 @@ contract RockPaperScissor {
             }
         }
 
-        LogWinningCharity(
-            playerOne,
-            playerOneAddr,
-            playerTwo,
-            playerTwoAddr,
-            winningCharity,
-            gameDonation
-        );
-
         if (playerOneScore > playerTwoScore) {
             return (player[playerOneAddr].charityAddr, gameDonation);
         } else {
@@ -242,15 +220,26 @@ contract RockPaperScissor {
         }
     }
 
+    function getEncryptedSequence()
+        external
+        constant
+        returns(bytes32)
+    {
+        return player[msg.sender].encryptedSequence;
+    }
+
     //to be used in tests bc issue with web3js
     //web3.utils.soliditySha3(['Rock'])
     //soliditySha3.js:176 Uncaught Error: Autodetection of array types is not supported.
-    function preHashTest(address _playerAddr, bytes32[] _sequence, bytes32 _secret)
-         pure
-         external
-         returns (bytes32)
+    function preHashTest(
+        address _playerAddr,
+        bytes32[] _sequence,
+        bytes32 _secret)
+        external
+        pure
+        returns(bytes32)
      {
-         return keccak256(_playerAddr, _sequence, _secret);
+        return keccak256(_playerAddr, _sequence, _secret);
      }
 
 }
