@@ -40,13 +40,13 @@ contract RockPaperScissor {
             bytes32 _imageUrl);
 
 
-    event LogWinningCharity(
-            bytes32[] _p1seq,
-            address _p1addr,
-            bytes32[] _p2seq,
-            address _p2addr,
-            address indexed _charityAddr,
-            uint256 _donationAmount);
+  event LogWinningCharity(
+           address indexed _charityAddr,
+           address indexed _p1addr,
+           address indexed _p2addr,
+           bytes32[] _p1seq,
+           bytes32[] _p2seq,
+           uint256 _donationAmount);
 
     modifier onlyOwner() {require(msg.sender == owner); _;}
 
@@ -174,11 +174,11 @@ contract RockPaperScissor {
             charity[winningCharity].balance += gameDonation;
 
             LogWinningCharity(
-                game1.sequence,
-                game1.player,
-                game2.sequence,
-                game2.player,
                 winningCharity,
+                game1.player,
+                game2.player,
+                game1.sequence,
+                game2.sequence,
                 gameDonation
             );
         }
