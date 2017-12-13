@@ -104,10 +104,10 @@ contract('RockPaperScissor', function(accounts) {
                           ["Rock", "Paper", "Scissor", "Rock", "Rock"],
                           "secretPass",
                           { from: player1, gas: 3000000 })
-      .then(function(result) {
-        console.log(result)
-        //assert.strictEqual(result, true, "Reveal was not successfull for player 1");
-    })
+      .then(txObject => {
+        const eventArgs = txObject.logs[ 0 ].args;
+        assert.strictEqual(eventArgs._playerAddr, player1, "Player was not logged correctly");
+      })
   });
 
   it ("should be possible to score a game after second player reveals sequence", async function() {
@@ -117,7 +117,7 @@ contract('RockPaperScissor', function(accounts) {
                           { from: player2, gas: 3000000 })
       .then(txObject => {
         const eventArgs = txObject.logs[ 0 ].args;
-        assert.strictEqual(eventArgs._winningCharity, charity, "Winner was not logged means game was not scored");
+        assert.strictEqual(eventArgs._charityAddr, charity, "Winner was not logged means game was not scored");
       })
   });
 
@@ -136,8 +136,9 @@ contract('RockPaperScissor', function(accounts) {
 
   it ("should be possible for a winning charity to withdraw funds form contract", async function() {
       await rpsContract.withdraw({ from: charity, gas: 3000000 })
-      .then(function(result) {
-        assert.strictEqual(result, true, "withdrawal was not successful for chairty");
+      .then(txObject => {
+        const eventArgs = txObject.logs[ 0 ].args;
+        assert.strictEqual(eventArgs._charityAddr, charity, "Withdrawal was not successful");
       })
   });
 
