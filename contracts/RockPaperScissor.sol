@@ -39,7 +39,12 @@ contract RockPaperScissor {
             bytes32 _description,
             bytes32 _imageUrl);
 
+
     event LogWinningCharity(
+            bytes32[] _p1seq,
+            address _p1addr,
+            bytes32[] _p2seq,
+            address _p2addr,
             address indexed _charityAddr,
             uint256 _donationAmount);
 
@@ -159,16 +164,20 @@ contract RockPaperScissor {
         games.push(newGame);
 
         if (games.length % 2 == 0) {
-            var (winningCharity, gameDonation) = scoreGame(games.length);
+            var (winningCharity, gameDonation, game1, game2) = scoreGame(games.length);
 
-            StickerToken token = StickerToken(stikerAddr);
+            /*StickerToken token = StickerToken(stikerAddr);
             if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
                 revert();
-            }
+            }*/
 
             charity[winningCharity].balance += gameDonation;
 
             LogWinningCharity(
+                game1.sequence,
+                game1.player,
+                game2.sequence,
+                game2.player,
                 winningCharity,
                 gameDonation
             );
@@ -182,13 +191,16 @@ contract RockPaperScissor {
     function scoreGame(uint256 _playNumber)
         private
         constant
-        returns(address winningCharity, uint256 gameDonation)
+        returns(address winningCharity, uint256 gameDonation, GameStruct g1, GameStruct g2)
     {
         //effectively this is should only be callable by player2
-        bytes32[] memory playerOne = games[_playNumber - 2].sequence;
-        bytes32[] memory playerTwo = games[_playNumber - 1].sequence;
-        address playerOneAddr = games[_playNumber - 2].player;
-        address playerTwoAddr = games[_playNumber - 1].player;
+
+        GameStruct memory game2 = games[_playNumber - 2];
+        GameStruct memory game1 = games[_playNumber - 1];
+        bytes32[] memory playerOne = game2.sequence;
+        bytes32[] memory playerTwo = game1.sequence;
+        address playerOneAddr = game2.player;
+        address playerTwoAddr = game1.player;
         uint8 playerOneScore;
         uint8 playerTwoScore;
 
@@ -213,10 +225,10 @@ contract RockPaperScissor {
         }
 
         if (playerOneScore > playerTwoScore) {
-            return (player[playerOneAddr].charityAddr, gameDonation);
+            return (player[playerOneAddr].charityAddr, gameDonation, game1, game2);
         } else {
             //if there is a tie, player two wins because its tx cost more :-)
-            return (player[playerTwoAddr].charityAddr, gameDonation);
+            return (player[playerTwoAddr].charityAddr, gameDonation, game1, game2);
         }
     }
 

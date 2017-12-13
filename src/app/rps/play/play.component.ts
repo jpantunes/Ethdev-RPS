@@ -123,12 +123,6 @@ export class PlayComponent {
 
     console.log('playGame', seq, secret);
 
-    let res = await this.rps.playGame(seq, secret, {from : addr});
-
-    this.status = GameStatus.WAITTING;
-
-    console.log(res);
-
 
     this.event = this.rps.LogWinningCharity();
     this.event.watch((error, result) => {
@@ -149,6 +143,16 @@ export class PlayComponent {
 
        }
      });
+
+
+    let res = await this.rps.playGame(seq, secret, {from : addr});
+
+    this.status = GameStatus.WAITTING;
+
+    console.log(res);
+
+
+
 
 
 
