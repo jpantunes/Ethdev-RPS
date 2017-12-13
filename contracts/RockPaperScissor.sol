@@ -33,6 +33,10 @@ contract RockPaperScissor {
 
     event LogDonation(address indexed _donor, uint256 _amount);
 
+    event LogReveal(address indexed _playerAddr);
+
+    event LogWithdrawal(address indexed _charityAddr);
+
     event LogNewCharity(
             address indexed _charityAddr,
             bytes32 _charityName,
@@ -40,7 +44,7 @@ contract RockPaperScissor {
             bytes32 _imageUrl);
 
 
-  event LogWinningCharity(
+    event LogWinningCharity(
            address indexed _charityAddr,
            address indexed _p1addr,
            address indexed _p2addr,
@@ -62,6 +66,7 @@ contract RockPaperScissor {
         owner = msg.sender;
     }
 
+    //create a new sticker Token address. must be run once after deployed
     function newStickerAddr()
         external
         onlyOwner
@@ -71,7 +76,7 @@ contract RockPaperScissor {
         return true;
     }
 
-    // "Test Charity", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
+    // add a new charity record
     function addCharity(
         address _wallet,
         bytes32 _name,
@@ -95,6 +100,7 @@ contract RockPaperScissor {
         return true;
     }
 
+    // allows registered charities to withdraw donation funds
     function withdraw()
         external
         onlyCharity
@@ -105,9 +111,12 @@ contract RockPaperScissor {
 
         msg.sender.transfer(charityBalance);
 
+        LogWithdrawal(msg.sender);
+
         return true;
     }
 
+    // gets the name of a registered charity or 0x00 if non-existant
     function getCharityName(address _charityAddr)
         external
         constant
@@ -116,6 +125,7 @@ contract RockPaperScissor {
         return charity[_charityAddr].name;
     }
 
+    // gets the balance of a registered charity or 0x00 if non-existant
     function getCharityBalance(address _charityAddr)
         external
         constant
@@ -124,10 +134,12 @@ contract RockPaperScissor {
         return charity[_charityAddr].balance;
     }
 
-    // P1, P2 = account0, account4
-    // P1 = "0x6009a4a4ed0f20a8c8114abe1c6b0daadb54335a0c1c9d4ddd14ee4cc404e6a2", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c"
-    // P2 = "0x2f9e3e2deacd6a62476944e482cbde4423338ef8d2f1e9ac67b18b1f6d0b4323", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (ties)
-    // P2 = "0x04871a799540604ffd45c18b21f9c89c3de0328ced3a804392214ff5461909c1", "0x14723a09acff6d2a60dcdf7aa4aff308fddc160c" (loses)
+    /*
+    commit phase. player submits an encrypted value and the address of the charityAddr
+    msg.value must be higher than 0.01 Eth
+    player must not have an on-going game
+    charity must exist
+    */
     function setupGame(bytes32 _encryptedSequence, address _charityAddr)
         public
         payable
@@ -135,7 +147,7 @@ contract RockPaperScissor {
     {
         require(msg.value >= 0.01 * 1 ether);
         require(player[msg.sender].encryptedSequence == 0x00); //this will stop players from doing 2 commits without revealing first
-        require(charity[_charityAddr].name != 0x00); //charity must exist on contract
+        require(charity[_charityAddr].name != 0x00);
 
         player[msg.sender].encryptedSequence = _encryptedSequence;
         player[msg.sender].charityAddr = _charityAddr;
@@ -147,9 +159,11 @@ contract RockPaperScissor {
 
     }
 
-    // P1 = ["Rock", "Paper", "Scissor", "Rock", "Rock"], "secretPass"
-    // P2 = ["Rock", "Paper", "Paper", "Rock", "Paper"], "secretPass" //(ties)
-    // P2 = ["Paper", "Paper", "Paper", "Rock", "Scissor"], "secretPass" //(loses)
+    /*
+    reveal phase. player submits sequence and secret
+    players address + sequence + secret must match the commited encrypted sequence
+    sequence array must have 5 elements
+    */
     function playGame(bytes32[] _sequence, bytes32 _secret)
         public
         onlyPlayer
@@ -181,6 +195,8 @@ contract RockPaperScissor {
                 game2.sequence,
                 gameDonation
             );
+        } else {
+            LogReveal(msg.sender);
         }
 
         player[msg.sender].encryptedSequence = 0x00; //allows for a new commit from player
@@ -188,13 +204,38 @@ contract RockPaperScissor {
         return true;
     }
 
+    // gets players current commit or 0x00 if non-existant
+    function getEncryptedSequence()
+        external
+        constant
+        returns(bytes32)
+    {
+        return player[msg.sender].encryptedSequence;
+    }
+
+    /*
+    to be used in tests bc issue with web3js
+    web3.utils.soliditySha3(['Rock'])
+    soliditySha3.js:176 Uncaught Error: Autodetection of array types is not supported.
+    */
+    function preHashTest(
+        address _playerAddr,
+        bytes32[] _sequence,
+        bytes32 _secret)
+        external
+        pure
+        returns(bytes32)
+    {
+        return keccak256(_playerAddr, _sequence, _secret);
+    }
+
+    //internal function to find winner. moved to private constant for gas cost
     function scoreGame(uint256 _playNumber)
         private
         constant
         returns(address winningCharity, uint256 gameDonation, GameStruct g1, GameStruct g2)
     {
-        //effectively this is should only be callable by player2
-
+        //effectively this function is only callable by player2
         GameStruct memory game2 = games[_playNumber - 2];
         GameStruct memory game1 = games[_playNumber - 1];
         bytes32[] memory playerOne = game2.sequence;
@@ -231,27 +272,5 @@ contract RockPaperScissor {
             return (player[playerTwoAddr].charityAddr, gameDonation, game1, game2);
         }
     }
-
-    function getEncryptedSequence()
-        external
-        constant
-        returns(bytes32)
-    {
-        return player[msg.sender].encryptedSequence;
-    }
-
-    //to be used in tests bc issue with web3js
-    //web3.utils.soliditySha3(['Rock'])
-    //soliditySha3.js:176 Uncaught Error: Autodetection of array types is not supported.
-    function preHashTest(
-        address _playerAddr,
-        bytes32[] _sequence,
-        bytes32 _secret)
-        external
-        pure
-        returns(bytes32)
-     {
-        return keccak256(_playerAddr, _sequence, _secret);
-     }
 
 }
