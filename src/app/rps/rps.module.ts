@@ -8,6 +8,8 @@ import {PlayComponent} from './play/play.component'
 import {ProjectComponent} from './project/project.component'
 import {GameComponent} from './play/game.component'
 import {AddCharityComponent} from './add-charity/add-charity.component'
+import {NewStickerComponent} from './new-sticker/new-sticker.component'
+import {MyStickersComponent} from './my-stickers/my-stickers.component'
 
 
 import { RpsRouting } from './rps.routing';
@@ -16,6 +18,7 @@ import {Web3Resolver} from './services/web3.resolver'
 import {RPSResolver} from './services/rps.resolver'
 import {CharitiesResolver} from './services/charities.resolver'
 import {AddrResolver} from './services/addr.resolver'
+import {StickersResolver} from './services/stickers.resolver'
 
 @NgModule({
   declarations: [
@@ -24,6 +27,8 @@ import {AddrResolver} from './services/addr.resolver'
     ProjectComponent,
     GameComponent,
     AddCharityComponent,
+    NewStickerComponent,
+    MyStickersComponent,
   ],
   imports: [
     CommonModule,
@@ -31,6 +36,6 @@ import {AddrResolver} from './services/addr.resolver'
     HttpModule,
     RpsRouting
   ],
-  providers: [Web3Resolver, RPSResolver, CharitiesResolver, AddrResolver],
+  providers: [Web3Resolver, RPSResolver, CharitiesResolver, AddrResolver, StickersResolver],
 })
 export class RpsModule { }

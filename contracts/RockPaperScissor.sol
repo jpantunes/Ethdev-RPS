@@ -166,10 +166,10 @@ contract RockPaperScissor {
         if (games.length % 2 == 0) {
             var (winningCharity, gameDonation, game1, game2) = scoreGame(games.length);
 
-            /*StickerToken token = StickerToken(stikerAddr);
+            StickerToken token = StickerToken(stikerAddr);
             if (!token.awardSticker.gas(120000)(msg.sender, player[msg.sender].encryptedSequence)) {
                 revert();
-            }*/
+            }
 
             charity[winningCharity].balance += gameDonation;
 
