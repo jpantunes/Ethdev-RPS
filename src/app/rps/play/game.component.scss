@@ -1,16 +1,41 @@
-.sequence {
+.canvas-container {
+    width: 400px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.sequence-container {
   display: flex;
-  flex-direction: row;
+  justify-content: space-around;
 
-  .symbol-container {
-    border: 1px solid black;
-    width: 50px;
-    height: 50px;
+  .sequence {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-    img {
-      display: block;
-      width: 100%;
-      height: 100%;
+    .symbol {
+      display: flex;
+
+      .symbol-container {
+        border: 1px solid black;
+        width: 50px;
+        height: 50px;
+
+        img {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+
     }
+
+    .score {
+      font-weight: bold;
+    }
+
+
   }
+
 }

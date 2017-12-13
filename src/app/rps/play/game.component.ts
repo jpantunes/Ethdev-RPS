@@ -7,23 +7,39 @@ import {Symbols, SymbolsUrl, SymbolsList, SymbolsName} from './game.service';
 @Component({
   template: `
 
-    <div class='sequence'>
-      {{p1addr == addr ? 'Me' : p1addr}}
-      <div *ngFor='let s of seq1' class='symbol-container'>
-        <img *ngIf='s' [src]='SymbolsUrl[s]'>
-      </div>
-      {{playerOneScore}}
+    <div *ngIf='won != null && won == addr' class="alert alert-success" role="alert">Congratulation you won a new sticker !</div>
+    <div *ngIf='won != null && won != addr' class="alert alert-danger" role="alert">Sorry, you lost this one</div>
+
+    <div class='canvas-container'>
+      <div #rps></div>
     </div>
 
-    <div class='sequence'>
-      {{p2addr == addr ? 'Me' : p2addr}}
-      <div *ngFor='let s of seq2' class='symbol-container'>
-        <img *ngIf='s' [src]='SymbolsUrl[s]'>
+
+    <div class='sequence-container'>
+      <div class='sequence'>
+        <p class='addr'>{{p1addr == addr ? 'Me' : p1addr}}</p>
+        <div class='symbol'>
+          <div *ngFor='let s of seq1' class='symbol-container'>
+            <img *ngIf='s' [src]='SymbolsUrl[s]'>
+          </div>
+        </div>
+        <p class='score'>Score: {{playerOneScore}}</p>
       </div>
-      {{playerTwoScore}}
+
+      <div class='sequence'>
+        <p class='addr'>{{p2addr == addr ? 'Me' : p2addr}}</p>
+        <div class='symbol'>
+          <div *ngFor='let s of seq2' class='symbol-container'>
+            <img *ngIf='s' [src]='SymbolsUrl[s]'>
+          </div>
+        </div>
+        <p class='score'>Score: {{playerTwoScore}}</p>
+      </div>
     </div>
 
-    <div #rps></div>
+
+
+
   `,
     styleUrls: ['./game.component.scss']
 })
@@ -32,9 +48,11 @@ export class GameComponent {
   @ViewChild('rps') rps: ElementRef
   addr;
   charities;
+  won = null;
 
   p1addr;
   p2addr;
+
 
   seq1 : Array<any>;
   seq2 : Array<any>;
@@ -124,6 +142,8 @@ export class GameComponent {
 
           SymA.destroy();
           SymB.destroy();
+        } else {
+          this.won = this.playerOneScore > this.playerTwoScore ? this.p1addr : this.p2addr;
         }
 
     }

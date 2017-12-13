@@ -1,0 +1,43 @@
+nav {
+  background-color: rgba(255,255,255,0.9);
+  height: 65px;
+  border-bottom: solid 1px #eaeaea;
+  margin-bottom: 25px;
+
+  .nav-container {
+    width: 1000px;
+    margin: 0 auto;
+    display: flex;
+
+    .logo {
+      display: block;
+      line-height: 65px;
+      text-align: left;
+      flex-grow: 1;
+      color: #9b59b6;
+    }
+
+    a {
+      display: block;
+      line-height: 65px;
+      margin: 0;
+      padding: 0 25px;
+      border-left: 1px solid #ecf0f1;
+      color: #2c3e50;
+
+      &.active {
+        text-decoration: underline;
+      }
+
+      &:last-of-type {
+        border-right: 1px solid #ecf0f1;
+      }
+
+    }
+  }
+}
+
+.simple-container {
+  width: 1000px;
+  margin: 0 auto;
+}

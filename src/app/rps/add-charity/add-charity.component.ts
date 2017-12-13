@@ -50,6 +50,7 @@ export class AddCharityComponent {
         console.log('addCharity', data.value.addr, data.value.name, data.value.description, data.value.imageUrl, {from : accs[0]});
         this.rps.addCharity(data.value.addr, data.value.name, data.value.description, data.value.imageUrl, {from : accs[0]}).then((a) =>{
           console.log(a);
+          alert('charity added')
         })
       });
     }

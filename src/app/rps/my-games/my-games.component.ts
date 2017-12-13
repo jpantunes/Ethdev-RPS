@@ -5,8 +5,8 @@ import { Router, ActivatedRoute } from '@angular/router';
   template:`
     <h1>My games</h1>
 
-    <div *ngFor='let game of games'>
-      <p (click)='replay(game)'>replay game</p>
+    <div *ngFor='let game of games; let i = index'>
+      <p (click)='replay(game)'>replay game {{i + 1}}</p>
     <div>
 
   `
