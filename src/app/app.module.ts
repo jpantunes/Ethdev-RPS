@@ -6,12 +6,14 @@ import { AppRouting } from './app.routing';
 import { AppComponent } from './app.component';
 
 import {needWeb3Component} from './needWeb3/needWeb3.component';
+import {networkNotSupported} from './needWeb3/network-not-supported.component'
 
 
 @NgModule({
   declarations: [
     AppComponent,
     needWeb3Component,
+    networkNotSupported,
   ],
   imports: [
     BrowserModule,

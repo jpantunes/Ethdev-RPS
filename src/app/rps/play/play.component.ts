@@ -101,40 +101,88 @@ export class PlayComponent {
     this.seq.pop();
   }
 
-  play() {
+  async play() {
 
     let seq = this.seq.map((s) => SymbolsName[s]);
     let addr = this.addr;
+    let secret = Math.random().toString(36).substring(7);
 
-    console.log(seq, this.charities[0].addr, {
-      from : addr,
-      value: 1000000000000000000
+    console.log('preHashTest', addr, seq, secret);
+    let hash = await this.rps.preHashTest.call(addr, seq, secret);
+
+    console.log('hash', hash);
+
+    console.log('setupGame', hash, this.charity);
+
+    let setup = await this.rps.setupGame(hash, this.charity,  {
+     from : addr,
+     value: 1000000000000000000
     });
 
+    console.log(setup);
+
+    console.log('playGame', seq, secret);
+
+    let res = await this.rps.playGame(seq, secret, {from : addr});
+
     this.status = GameStatus.WAITTING;
-    this.rps.playGame(seq, this.charities[0].addr, {
-      from : addr,
-      value: 1000000000000000000
-    }).then((ok) => {
-      this.event = this.rps.LogWinningCharity();
-      this.event.watch((error, result) => {
-         if (!error) {
-           console.log('e', result, result.args);
 
-           this.status = GameStatus.MATCH;
-           this.zone.run(() => {
-             this.router.navigate(['/rps/play/game'], { queryParams:
-               {
-                 p1addr: result.args._p1addr,
-                 p2addr: result.args._p2addr,
-                 seq1: result.args._p1seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)]),
-                 seq2: result.args._p2seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)])
-               }});
-           })
+    console.log(res);
 
-         }
-       });
-    })
+
+    this.event = this.rps.LogWinningCharity();
+    this.event.watch((error, result) => {
+      console.log(error, result)
+       if (!error) {
+         console.log('e', result, result.args);
+
+         this.status = GameStatus.MATCH;
+         this.zone.run(() => {
+           this.router.navigate(['/rps/play/game'], { queryParams:
+             {
+               p1addr: result.args._p1addr,
+               p2addr: result.args._p2addr,
+               seq1: result.args._p1seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)]),
+               seq2: result.args._p2seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)])
+             }});
+         })
+
+       }
+     });
+
+
+
+
+
+    // console.log(seq, this.charities[0].addr, {
+    //   from : addr,
+    //   value: 1000000000000000000
+    // });
+    //
+    // this.status = GameStatus.WAITTING;
+    // this.rps.playGame(seq, this.charities[0].addr, {
+    //   from : addr,
+    //   value: 1000000000000000000
+    // }).then((ok) => {
+    //   this.event = this.rps.LogWinningCharity();
+    //   this.event.watch((error, result) => {
+    //      if (!error) {
+    //        console.log('e', result, result.args);
+    //
+    //        this.status = GameStatus.MATCH;
+    //        this.zone.run(() => {
+    //          this.router.navigate(['/rps/play/game'], { queryParams:
+    //            {
+    //              p1addr: result.args._p1addr,
+    //              p2addr: result.args._p2addr,
+    //              seq1: result.args._p1seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)]),
+    //              seq2: result.args._p2seq.map((s) => SymbolsNameToId[window['web3'].toUtf8(s)])
+    //            }});
+    //        })
+    //
+    //      }
+    //    });
+    // })
   }
 
   ngOnDestroy() {
