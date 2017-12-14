@@ -6,10 +6,18 @@ import { Router, ActivatedRoute } from '@angular/router';
     <h1>My games</h1>
 
     <div *ngFor='let game of games; let i = index'>
-      <p (click)='replay(game)'>replay game {{i + 1}}</p>
-    <div>
+      <button (click)='replay(game)' class="btn btn-success">replay game {{i + 1}}</button>
+    </div>
 
-  `
+    <p *ngIf='games.length == 0'>You dont have any games :(</p>
+
+  `,
+  styles: [ `
+    button {
+      margin: 5px 0;
+    }
+    `
+  ]
 })
 export class MyGamesCompoent {
 

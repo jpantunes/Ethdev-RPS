@@ -13,6 +13,9 @@ console.log(SymbolsNameToId);
 enum GameStatus {
   CHARITY,
   SEQUENCE,
+  C1,
+  INTER,
+  C2,
   WAITTING,
   MATCH,
 }
@@ -24,10 +27,10 @@ enum GameStatus {
       <h1>Select your charity</h1>
       <div class='charities' *ngFor='let c of charities'>
         <div class='charity' (click)='selectCharity(c)' [class.selected]='charity == c.addr'>
-          <img height='100' [src]='c.imageUrl'>
+          <img height='100' src='https://image.freepik.com/free-vector/charity-hands_1025-146.jpg'>
           <div class='text'>
             <p class='title'>{{c.name}}</p>
-            <p>{{c.description}}</p>
+            <p>{{c.description}}...</p>
           </div>
         </div>
       </div>
@@ -35,6 +38,7 @@ enum GameStatus {
 
 
     <div *ngIf='this.status >= GameStatus.SEQUENCE'>
+      <hr/>
       <h1>Select your sequence</h1>
 
       <div class='SymbolsList'>
@@ -48,8 +52,25 @@ enum GameStatus {
           <img *ngIf='s' [src]='SymbolsUrl[s]'>
         </div>
       </div>
+      <br />
 
-      <button (click)='play()' type="button" class="btn btn-primary" [disabled]='!seq[4]'>Play</button>
+      <div *ngIf='this.status == GameStatus.SEQUENCE'>
+        <button (click)='play()' type="button" class="btn btn-primary" [disabled]='!seq[4]'>Play</button>
+        <p>Note: this is a beta, play request and reveal secret will happen subsequently</p>
+      </div>
+    </div>
+
+
+    <div *ngIf='this.status == GameStatus.C1'>
+      <h1>waitting for sequence to be mined...</h1>
+    </div>
+
+    <div *ngIf='this.status == GameStatus.INTER'>
+      <h1>sending reveal now...</h1>
+    </div>
+
+    <div *ngIf='this.status == GameStatus.C2'>
+      <h1>waitting for secret to be mined....</h1>
     </div>
 
     <div *ngIf='this.status == GameStatus.WAITTING'>
@@ -110,14 +131,20 @@ export class PlayComponent {
     console.log('preHashTest', addr, seq, secret);
     let hash = await this.rps.preHashTest.call(addr, seq, secret);
 
+
+    this.status = GameStatus.C1;
+
     console.log('hash', hash);
 
     console.log('setupGame', hash, this.charity);
 
     let setup = await this.rps.setupGame(hash, this.charity,  {
      from : addr,
-     value: 1000000000000000000
+     value: 100000000000000000
     });
+
+
+    this.status = GameStatus.INTER;
 
     console.log(setup);
 
@@ -144,6 +171,8 @@ export class PlayComponent {
        }
      });
 
+
+    this.status = GameStatus.C2;
 
     let res = await this.rps.playGame(seq, secret, {from : addr});
 

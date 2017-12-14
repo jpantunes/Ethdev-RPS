@@ -3,6 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   template:`
+    <div class="alert alert-warning" role="alert">For contract owner only, contract will fail otherwise</div>
+
     <h1>Create a new sticker</h1>
 
     <button (click)='sticker()' class="btn btn-success">new sticker</button>

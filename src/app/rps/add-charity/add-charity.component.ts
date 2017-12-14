@@ -3,7 +3,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   template:`
+    <div class="alert alert-warning" role="alert">For contract owner only, contract will fail otherwise</div>
+
     <h1>Add a charity</h1>
+    
     <form (ngSubmit)="onSubmit(heroForm)" #heroForm="ngForm">
       <div class="form-group">
         <label for="name">Name</label>
